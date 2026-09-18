@@ -25,7 +25,9 @@ Change an answer (budget, country, exam score) and the whole route visibly recom
   Natural Sciences, Design/Arts — every field has multiple options across at least 2 countries.
 - **Language:** RU primary; EN toggle is a stretch goal, not MVP-blocking.
 - **Out of scope (case boundary):** lessons, courses, mock tests, teacher dashboard, payments,
-  auth, admission probability guarantees. Anything extra goes on the "future development" slide.
+  auth, admission probability guarantees. Anything beyond §10 goes on the "future development" slide.
+- **In scope beyond the case's 7-step minimum:** program detail pages with photos/campus life,
+  favorites, a visible scholarship badge, and a deadline calendar view — see §10.
 
 ## 2. The 7-step journey (this is what the jury walks)
 
@@ -42,6 +44,13 @@ This is the "change budget and watch it react" requirement turned into a visible
 | 5 | `/compare` | 2–3 columns, rows ordered by what *this* user weighted highest | Sticky-header table, best-in-row highlight, CTA to roadmap |
 | 6 | `/roadmap` | Dated plan grouped by phase: exams, documents, deadlines, academic steps, activities | Vertical timeline, category chips, progress bar |
 | 7 | (top of `/roadmap`) | One next action, checkbox, progress %. Returning users land here via a saved profile link. | Sticky "Next step" card |
+
+**Supplementary pages (not case-required, added by us — see §10 for detail):**
+
+| Route | Reached from | Purpose |
+|---|---|---|
+| `/program/[id]` | "View details" on any ProgramCard (steps 4, 5, Favorites) | Photos, campus-life blurb, full cost/requirements, scholarship detail, sources |
+| `/favorites` | Bookmark icon on ProgramCard (step 4+), persistent nav | Bookmarked programs, independent of the Compare/Roadmap selection |
 
 Mandatory UX rules from the case:
 - Every screen shows where the user is, what's done, and what's next (named, not implied).
@@ -99,6 +108,8 @@ application_deadline  date
 intake                text           "Fall 2027"
 source_url            text
 data_status           text           "verified" | "demo"
+image_url             text           campus/city photo (stock photo ok, credited in README)
+campus_life_note      text           1-2 sentences on student life/city; "demo" allowed like other fields
 ```
 
 ### `profiles` (anonymous, no auth)
@@ -108,6 +119,7 @@ id                uuid PK   (kept in localStorage; shareable link)
 created_at, updated_at
 answers           jsonb     the questionnaire object (§3)
 selected_programs text[]
+favorites         text[]    bookmarked program ids, independent of selected_programs
 progress          jsonb     { [task_id]: done_at }
 ```
 
@@ -195,7 +207,32 @@ types; a single flag/env var switches from mock to the real API.
 - Every factual number has a source URL or a "demo data" badge; README lists all sources.
 - Unverified deadlines are marked `data_status = demo`.
 
-## 10. Submission checklist (from the case)
+## 10. Additional features (team-added, beyond the case's 7-step minimum)
+
+These four were chosen deliberately small: each reuses data/state already in the model, none
+needs auth, push notifications, or a new backend service.
+
+- **Program detail (`/program/[id]`):** campus/city photo, a 1–2 sentence campus-life note, the
+  full requirement/cost breakdown, scholarship detail, sources. Reuses the same `Program` object
+  already fetched for Recommendations/Compare — no new API shape, just a fuller render. This is
+  what makes a recommendation feel like a real place instead of a spreadsheet row, and it's a
+  strong UI/UX opportunity.
+- **Favorites (`/favorites`):** a bookmark icon on every `ProgramCard` from step 4 onward, backed
+  by `profiles.favorites` (§4). Deliberately separate from `selected_programs` — browsing and
+  bookmarking shouldn't force the user into Compare/Roadmap.
+- **Scholarship visibility:** `scholarship_available` + `scholarship_note` already exist in the
+  data model — surfaced as a badge/chip on `ProgramCard` and `ProgramDetail`, expandable to detail.
+  Already feeds a roadmap finance task (§5); this just makes it visible instead of buried.
+- **Deadline calendar view + reminders:** `/roadmap` gets a Timeline/Calendar toggle over the same
+  task data — no new backend logic, just a second rendering. "Remind me" is a **.ics file
+  download** per deadline (works without any backend or push-notification infrastructure) plus a
+  local "reminder set" flag in `progress`.
+
+Image sourcing note for the honesty rules (§9): campus/city photos are stock photography, not
+official university photography — README must say so; they illustrate the city/campus, not claim
+to be the institution's own image.
+
+## 11. Submission checklist (from the case)
 
 - [ ] Live URL, working without login (deploy before the deadline — see PLAN.md)
 - [ ] GitHub repo with real commit history from both members

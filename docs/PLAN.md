@@ -35,17 +35,22 @@ apps/
       compare/page.tsx          step 5
       roadmap/page.tsx          step 6 + 7 (next action on top)
       p/[id]/page.tsx           returning user → loads profile → /roadmap
+      program/[id]/page.tsx     program detail — photo, campus life, full facts (SPEC §10)
+      favorites/page.tsx        bookmarked programs (SPEC §10)
     components/
       ui/                       shadcn (generated)
       shell/                    StepIndicator, ProfileDrawer, AppShell
-      program/                  ProgramCard, FactorBars, SourceBadge, LabelBadge
-      roadmap/                  Timeline, TimelineItem, NextActionCard, ProgressBar
+      program/                  ProgramCard, FactorBars, SourceBadge, LabelBadge, ScholarshipBadge,
+                                 BookmarkButton, ProgramGallery, CampusLifeCard
+      roadmap/                  Timeline, TimelineItem, NextActionCard, ProgressBar, CalendarView
       questionnaire/            one component per screen
     lib/
       api.ts                    getPlan / explain / saveProfile / loadProfile (mock ↔ real switch)
-      store.ts                  answers + selections + progress; localStorage persistence
+      store.ts                  answers + selections + progress + favorites; localStorage persistence
+      ics.ts                    builds a downloadable .ics for one roadmap deadline
     mock/
-      programs.json  plan.json  realistic mock data conforming to shared types
+      programs.json  plan.json  realistic mock data conforming to shared types (incl. image_url,
+                                 campus_life_note)
 
   api/                       Altair's app
     src/
@@ -105,13 +110,20 @@ docs/
 11. ProfileDrawer — edit budget/country/exam from any screen → plan re-runs → UI updates. This is the single most jury-visible feature; don't skip it.
 12. States: skeleton / empty / error / offline on every data screen.
 13. `/p/[id]` — opens roadmap for a saved profile (share/return link).
+14. `ProgramDetail` (`/program/[id]`) — gallery/photo, campus-life note, full requirement/cost
+    breakdown, scholarship detail, sources. Linked from every ProgramCard.
+15. `BookmarkButton` on `ProgramCard` + `/favorites` page — bookmarking works independent of
+    Compare/Roadmap selection.
+16. `ScholarshipBadge` on `ProgramCard`/`ProgramDetail` — surfaces existing `scholarship_note` data.
+17. `CalendarView` — Timeline/Calendar toggle on `/roadmap`; `lib/ics.ts` + a download button per
+    task for "remind me" (no backend notifications needed).
 
 ### Altair (`apps/api`) — start immediately, in parallel
-1. Program research — the biggest task. Fill `data/programs.json` with ~25 programs across US/UK/DE/KR/TR per SPEC §4. Every field populated, `source_url`, `data_status`. Write `data/SOURCES.md` as you go.
+1. Program research — the biggest task. Fill `data/programs.json` with ~25 programs across US/UK/DE/KR/TR per SPEC §4, **including `image_url` and `campus_life_note`** now that they're in the schema. Every field populated, `source_url`, `data_status`. Write `data/SOURCES.md` as you go.
 2. Supabase: `supabase/schema.sql`, create tables, seed programs from JSON, `db/*` module.
 3. Engine `engine/*` per SPEC §5 — score → label → select → diagnosis → roadmap. `buildPlan()` returns a `Plan`; write 3 fixture tests (tight budget, strong exam scores, undecided grade 9).
 4. `POST /api/plan` — fixture answers in, JSON plan out, fast.
-5. `POST/GET/PATCH /api/profile` — saves & loads answers, selections, progress.
+5. `POST/GET/PATCH /api/profile` — saves & loads answers, selections, favorites, progress.
 6. `POST /api/explain` + fallback templates — returns phrased text; fallback fires when the LLM key is missing or the call fails/times out.
 7. Sanity pass: change budget from high to low on a fixture and confirm the top picks change; change country; add an exam score. If nothing visibly changes, tune the weights. Document in SOURCES.md.
 
@@ -153,5 +165,6 @@ docs/
 | LLM slow/fails during the live demo | engine result renders first; LLM phrasing streams in or falls back; hard timeout |
 | Supabase down during demo | localStorage mirror of the last plan; programs JSON bundled as fallback seed |
 | Deploy left too late | deploy once basic flow works, redeploy on every meaningful merge after that |
-| Scope creep (scholarships search, essay help, chat, etc.) | not in MVP — goes on the "future development" slide only |
+| Scope creep beyond SPEC §10 (essay help, chat, AI tone picker, etc.) | not in MVP — goes on the "future development" slide only |
+| Program detail/favorites/calendar (§10) eat time meant for the core 7 steps | core 7-step journey (steps 6–13 of your list) ships and is rehearsed *before* any of steps 14–17 start |
 | Changing an answer doesn't visibly change results | dedicated sanity-pass step in Altair's list; tune weights on fixtures until it does |
