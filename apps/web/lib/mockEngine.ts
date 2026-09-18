@@ -162,20 +162,41 @@ function labelFor(program: Program, factors: FactorScores): Label {
 // Scoring + selection
 // ---------------------------------------------------------------------------
 
+function scoreProgram(
+  answers: Answers,
+  program: Program,
+  weights: ReturnType<typeof getWeights>,
+): Recommendation {
+  const factors = computeFactors(answers, program);
+  const weightedSum =
+    factors.field * weights.field +
+    factors.budget * weights.budget +
+    factors.academic * weights.academic +
+    factors.exams * weights.exams +
+    factors.country * weights.country +
+    factors.language * weights.language;
+  const fitScore = Math.round(weightedSum * 100);
+  return { program, factors, fitScore, label: labelFor(program, factors) };
+}
+
 function scorePrograms(answers: Answers, programs: Program[]): Recommendation[] {
   const weights = getWeights(answers);
-  return programs.filter((p) => passesHardFilters(answers, p)).map((program) => {
-    const factors = computeFactors(answers, program);
-    const weightedSum =
-      factors.field * weights.field +
-      factors.budget * weights.budget +
-      factors.academic * weights.academic +
-      factors.exams * weights.exams +
-      factors.country * weights.country +
-      factors.language * weights.language;
-    const fitScore = Math.round(weightedSum * 100);
-    return { program, factors, fitScore, label: labelFor(program, factors) };
-  });
+  const passingPrograms = programs.filter((p) => passesHardFilters(answers, p));
+  const passingScored = passingPrograms.map((p) => scoreProgram(answers, p, weights));
+
+  if (passingScored.length >= 3) return passingScored;
+
+  // SPEC.md §5 fallback: "If fewer than 3 remain, relax filters and mark results stretch: true."
+  // Backfill from the programs the hard filter dropped, best-fit first, marking each as stretch.
+  const passingIds = new Set(passingPrograms.map((p) => p.id));
+  const needed = 3 - passingScored.length;
+  const relaxedScored = programs
+    .filter((p) => !passingIds.has(p.id))
+    .map((p) => ({ ...scoreProgram(answers, p, weights), stretch: true as const }))
+    .sort((a, b) => b.fitScore - a.fitScore)
+    .slice(0, needed);
+
+  return [...passingScored, ...relaxedScored];
 }
 
 function selectRecommendations(scored: Recommendation[]): Recommendation[] {
@@ -466,22 +487,29 @@ function activityTasks(programs: Program[], answers: Answers, todayIso: string):
   return tasks;
 }
 
-function buildPhases(tasks: Task[]): Record<RoadmapPhase, string[]> {
+function buildPhases(tasks: Task[], programs: Program[]): Record<RoadmapPhase, string[]> {
   const phases: Record<RoadmapPhase, string[]> = { now: [], autumn: [], winter: [], spring: [], after_submission: [] };
   if (tasks.length === 0) return phases;
 
   const today = new Date();
   const nowEnd = addDaysToDate(today, 42);
   const nowEndMs = nowEnd.getTime();
-  const maxDeadlineMs = Math.max(...tasks.map((t) => new Date(t.due).getTime()));
-  const span = Math.max(0, maxDeadlineMs - nowEndMs);
+
+  // The boundary for "after_submission" is the EARLIEST application deadline among the selected
+  // programs, not the latest task due date in this list (which can never exceed its own max).
+  // Anything due after that first deadline is effectively post-submission for that program —
+  // e.g. a second program's later deadline, or a follow-up task, once you've already applied.
+  const deadlineMsList = programs.map((p) => new Date(p.applicationDeadline).getTime());
+  const earliestDeadlineMs = deadlineMsList.length > 0 ? Math.min(...deadlineMsList) : nowEndMs;
+
+  const span = Math.max(0, earliestDeadlineMs - nowEndMs);
   const autumnEndMs = nowEndMs + span / 3;
   const winterEndMs = nowEndMs + (2 * span) / 3;
 
   for (const task of tasks) {
     const dueMs = new Date(task.due).getTime();
-    if (dueMs <= nowEndMs) phases.now.push(task.id);
-    else if (dueMs > maxDeadlineMs) phases.after_submission.push(task.id);
+    if (dueMs > earliestDeadlineMs) phases.after_submission.push(task.id);
+    else if (dueMs <= nowEndMs) phases.now.push(task.id);
     else if (dueMs <= autumnEndMs) phases.autumn.push(task.id);
     else if (dueMs <= winterEndMs) phases.winter.push(task.id);
     else phases.spring.push(task.id);
@@ -519,7 +547,7 @@ function buildRoadmap(topPrograms: Program[], answers: Answers): Roadmap {
     done: false,
   }));
 
-  const phases = buildPhases(tasks);
+  const phases = buildPhases(tasks, topPrograms);
   const nextActionTaskId = tasks.length > 0 ? tasks[0].id : null;
   // A freshly built plan has no persisted progress yet (that lives in the store), so every task
   // starts undone and progressPct is always 0 here.
