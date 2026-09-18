@@ -5,18 +5,8 @@ import { useRouter } from "next/navigation";
 import { StepIndicator } from "@/components/shell/StepIndicator";
 import { Button } from "@/components/ui/button";
 import { useProfileStore } from "@/lib/store";
+import { JOURNEY_LABELS } from "@/lib/journey";
 import { GROUPS } from "./groups";
-
-/** The seven stops of SPEC.md §2; the questionnaire is stop two. */
-const JOURNEY_LABELS = [
-  "Старт",
-  "Анкета",
-  "Диагностика",
-  "Рекомендации",
-  "Сравнение",
-  "План",
-  "Следующий шаг",
-];
 
 /**
  * The questionnaire of SPEC.md §3: one group of questions per screen, every

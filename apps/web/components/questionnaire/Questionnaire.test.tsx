@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Questionnaire } from "./Questionnaire";
+import { __resetProfileStoreForTests } from "@/lib/store";
 
 const push = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
@@ -21,6 +22,7 @@ const heading = () => screen.getByRole("heading", { level: 1 });
 beforeEach(() => {
   push.mockClear();
   window.localStorage.clear();
+  __resetProfileStoreForTests();
 });
 
 describe("Questionnaire", () => {

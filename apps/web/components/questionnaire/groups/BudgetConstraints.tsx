@@ -6,7 +6,7 @@ import type { GroupProps } from "./types";
 
 type Hours = Answers["hoursPerWeek"];
 
-const BUDGETS: Option<BudgetBand>[] = [
+export const BUDGETS: Option<BudgetBand>[] = [
   { value: "<5k", label: "До $5 000" },
   { value: "5-15k", label: "$5 000 — 15 000" },
   { value: "15-30k", label: "$15 000 — 30 000" },

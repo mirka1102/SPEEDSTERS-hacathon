@@ -84,6 +84,25 @@ describe("buildMockPlan", () => {
       expect(rec.stretch).toBe(true);
     }
   });
+
+  it("builds the roadmap from selectedIds (Compare's choice) instead of the algorithmic top 3 when given", () => {
+    const noSelection = buildMockPlan(baseAnswers(), typedPrograms);
+    const top3Ids = noSelection.recommendations.slice(0, 3).map((r) => r.program.id);
+
+    // Pick two recommended programs that are NOT both in the top 3, so the roadmap's program set
+    // must visibly differ from the no-selection case.
+    const notInTop3 = noSelection.recommendations.find((r) => !top3Ids.includes(r.program.id));
+    expect(notInTop3).toBeDefined();
+    const selectedIds = [top3Ids[0], notInTop3!.program.id];
+
+    const selectedPlan = buildMockPlan(baseAnswers(), typedPrograms, selectedIds);
+    const roadmapProgramIds = new Set(selectedPlan.roadmap.tasks.flatMap((t) => t.programIds));
+    expect(roadmapProgramIds.has(notInTop3!.program.id)).toBe(true);
+    // recommendations themselves are unaffected by the selection — only the roadmap changes.
+    expect(selectedPlan.recommendations.map((r) => r.program.id)).toEqual(
+      noSelection.recommendations.map((r) => r.program.id),
+    );
+  });
 });
 
 function testProgram(overrides: Partial<Program>): Program {

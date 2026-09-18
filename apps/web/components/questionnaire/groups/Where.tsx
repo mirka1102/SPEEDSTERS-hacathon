@@ -6,7 +6,7 @@ import type { GroupProps } from "./types";
 
 type CountryChoice = Country | "open_to_any";
 
-const COUNTRIES: Option<CountryChoice>[] = [
+export const COUNTRIES: Option<CountryChoice>[] = [
   { value: "US", label: "США" },
   { value: "UK", label: "Великобритания" },
   { value: "DE", label: "Германия" },

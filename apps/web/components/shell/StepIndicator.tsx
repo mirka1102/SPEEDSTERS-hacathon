@@ -6,7 +6,7 @@ type StepIndicatorProps = {
   /** How many numbered stops the journey has. */
   total: number;
   /** Names of the numbered stops, in order. */
-  labels: string[];
+  labels: readonly string[];
 };
 
 /**

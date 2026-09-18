@@ -162,6 +162,16 @@ function labelFor(program: Program, factors: FactorScores): Label {
 // Scoring + selection
 // ---------------------------------------------------------------------------
 
+/**
+ * Scores one program in isolation against the current answers — used by
+ * Favorites (SPEC.md §10), which shows bookmarked programs independent of
+ * whatever made it into the top recommendations, but still needs an honest,
+ * up-to-date fit score for each rather than a fake placeholder.
+ */
+export function scoreProgramForAnswers(answers: Answers, program: Program): Recommendation {
+  return scoreProgram(answers, program, getWeights(answers));
+}
+
 function scoreProgram(
   answers: Answers,
   program: Program,
@@ -338,11 +348,11 @@ function bestExamState(states: ExamTaskState[]): ExamTaskState {
 function englishTaskFor(state: ExamTaskState): { title: string; offset: number } | null {
   switch (state) {
     case "missing":
-      return { title: "Take an English proficiency exam (IELTS or TOEFL)", offset: 90 };
+      return { title: "Сдать экзамен по английскому (IELTS или TOEFL)", offset: 90 };
     case "planning":
-      return { title: "Sit your scheduled English exam", offset: 45 };
+      return { title: "Сдать запланированный экзамен по английскому", offset: 45 };
     case "below":
-      return { title: "Raise your English exam score", offset: 60 };
+      return { title: "Пересдать экзамен по английскому, чтобы поднять балл", offset: 60 };
     default:
       return null;
   }
@@ -351,11 +361,11 @@ function englishTaskFor(state: ExamTaskState): { title: string; offset: number }
 function satTaskFor(state: ExamTaskState): { title: string; offset: number } | null {
   switch (state) {
     case "missing":
-      return { title: "Register for and take the SAT", offset: 90 };
+      return { title: "Зарегистрироваться и сдать SAT", offset: 90 };
     case "planning":
-      return { title: "Sit your scheduled SAT", offset: 45 };
+      return { title: "Сдать запланированный SAT", offset: 45 };
     case "below":
-      return { title: "Retake the SAT to raise your score", offset: 60 };
+      return { title: "Пересдать SAT, чтобы поднять балл", offset: 60 };
     default:
       return null;
   }
@@ -375,7 +385,7 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
       tasks.push({
         category: "exam",
         title: englishTask.title,
-        why: `${program.university} (${program.program}) requires an English exam score you haven't met yet.`,
+        why: `${program.university} (${program.program}) требует балл за английский, которого пока нет.`,
         due: clampFuture(addDays(deadline, -englishTask.offset), todayIso),
         programIds: [program.id],
         sourceUrl: program.sourceUrl,
@@ -390,7 +400,7 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
       tasks.push({
         category: "exam",
         title: satTask.title,
-        why: `${program.university} (${program.program}) requires the SAT.`,
+        why: `${program.university} (${program.program}) требует SAT.`,
         due: clampFuture(addDays(deadline, -satTask.offset), todayIso),
         programIds: [program.id],
         sourceUrl: program.sourceUrl,
@@ -400,8 +410,8 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
 
   tasks.push({
     category: "document",
-    title: `Prepare application documents for ${program.university}`,
-    why: `Required to apply to ${program.program} at ${program.university}.`,
+    title: `Подготовить документы для поступления в ${program.university}`,
+    why: `Нужно для подачи на ${program.program} в ${program.university}.`,
     due: clampFuture(addDays(deadline, -30), todayIso),
     programIds: [program.id],
     sourceUrl: program.sourceUrl,
@@ -409,8 +419,8 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
 
   tasks.push({
     category: "deadline",
-    title: `Submit your application to ${program.university}`,
-    why: `Application deadline for ${program.program}.`,
+    title: `Подать заявку в ${program.university}`,
+    why: `Дедлайн подачи заявки на ${program.program}.`,
     due: deadline,
     programIds: [program.id],
     sourceUrl: program.sourceUrl,
@@ -419,8 +429,8 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
   if (answers.gpa < program.gpaMin4) {
     tasks.push({
       category: "academic",
-      title: "Close your GPA gap before applying",
-      why: "Your current GPA is below the minimum some of your matched programs expect.",
+      title: "Подтянуть средний балл (GPA) перед подачей",
+      why: "Твой текущий GPA ниже минимума, который требуют некоторые из подходящих программ.",
       due: clampFuture(addDays(deadline, -120), todayIso),
       programIds: [program.id],
       sourceUrl: "demo",
@@ -430,8 +440,8 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
   if (answers.scholarshipNeed !== "not_needed" && program.scholarshipAvailable) {
     tasks.push({
       category: "finance",
-      title: `Apply for the ${program.university} scholarship`,
-      why: program.scholarshipNote ?? `Scholarship available for ${program.program}.`,
+      title: `Подать заявку на стипендию ${program.university}`,
+      why: program.scholarshipNote ?? `Для ${program.program} доступна стипендия.`,
       due: clampFuture(addDays(deadline, -45), todayIso),
       programIds: [program.id],
       sourceUrl: program.sourceUrl,
@@ -442,23 +452,23 @@ function programTasks(program: Program, answers: Answers, todayIso: string): Dra
 }
 
 const FIELD_ACTIVITIES: Record<Field, [string, string]> = {
-  cs: ["Build and publish a coding project on GitHub", "Take part in a hackathon or open-source contribution"],
+  cs: ["Собрать и опубликовать код-проект на GitHub", "Поучаствовать в хакатоне или опенсорс-проекте"],
   eng: [
-    "Build a hands-on project (robotics, CAD, or a prototype)",
-    "Join a robotics or engineering club or competition",
+    "Сделать практический проект (робототехника, CAD или прототип)",
+    "Вступить в инженерный кружок или соревнование",
   ],
   business: [
-    "Start a small entrepreneurial project or enter a case competition",
-    "Complete a business or finance online certification",
+    "Запустить небольшой предпринимательский проект или кейс-чемпионат",
+    "Пройти онлайн-курс по бизнесу или финансам",
   ],
   natsci: [
-    "Take part in a science olympiad or a research project",
-    "Complete a MOOC in your chosen science field",
+    "Поучаствовать в олимпиаде по естественным наукам или в исследовательском проекте",
+    "Пройти онлайн-курс по своему научному направлению",
   ],
-  design: ["Build a design portfolio of 3-5 projects", "Enter a design or art competition"],
+  design: ["Собрать портфолио из 3-5 дизайн-проектов", "Поучаствовать в конкурсе по дизайну или искусству"],
   undecided: [
-    "Try a short online course in each field you're considering",
-    "Job-shadow or interview someone working in a field that interests you",
+    "Попробовать короткий онлайн-курс по каждому направлению, которое рассматриваешь",
+    "Пообщаться с человеком, который работает в интересном тебе направлении",
   ],
 };
 
@@ -467,17 +477,18 @@ function activityTasks(programs: Program[], answers: Answers, todayIso: string):
   const [first, second] = FIELD_ACTIVITIES[primaryField];
   const due = clampFuture(addDays(todayIso, 14), todayIso);
   const programIds = programs.map((p) => p.id);
+  const why = "Усиливает твою подготовку по этому направлению.";
 
   const tasks: DraftTask[] = [
-    { category: "activity", title: first, why: "Strengthens your fit for this field.", due, programIds, sourceUrl: "demo" },
-    { category: "activity", title: second, why: "Strengthens your fit for this field.", due, programIds, sourceUrl: "demo" },
+    { category: "activity", title: first, why, due, programIds, sourceUrl: "demo" },
+    { category: "activity", title: second, why, due, programIds, sourceUrl: "demo" },
   ];
 
   if (answers.activities.includes("none")) {
     tasks.push({
       category: "activity",
-      title: "Start any extracurricular activity to strengthen your profile",
-      why: "You haven't listed any activities yet, and admissions committees value demonstrated engagement.",
+      title: "Начать любую внеучебную активность, чтобы усилить профиль",
+      why: "Ты пока не отметил активностей, а приёмные комиссии ценят реальную вовлечённость.",
       due,
       programIds: [],
       sourceUrl: "demo",
@@ -560,14 +571,24 @@ function buildRoadmap(topPrograms: Program[], answers: Answers): Roadmap {
 // Entry point
 // ---------------------------------------------------------------------------
 
-export function buildMockPlan(answers: Answers, programs: Program[]): Plan {
+/**
+ * `selectedIds` mirrors PlanRequest.selected (SPEC.md §7): once the user has
+ * chosen programs in Compare, the roadmap is built for *those*, not the
+ * algorithmic top 3 — picking a safety + a reach shouldn't silently roadmap
+ * only whichever scored highest. Falls back to top 3 before any selection
+ * exists (Diagnosis/Recommendations, which call this with no third argument).
+ */
+export function buildMockPlan(answers: Answers, programs: Program[], selectedIds?: string[]): Plan {
   const scored = scorePrograms(answers, programs);
   const recommendations = selectRecommendations(scored);
   const top3 = recommendations.slice(0, 3);
   const diagnosis = buildDiagnosis(answers, programs.length, scored, top3);
-  const roadmap = buildRoadmap(
-    top3.map((r) => r.program),
-    answers,
-  );
+
+  const roadmapPrograms =
+    selectedIds && selectedIds.length > 0
+      ? programs.filter((p) => selectedIds.includes(p.id))
+      : top3.map((r) => r.program);
+  const roadmap = buildRoadmap(roadmapPrograms, answers);
+
   return { diagnosis, recommendations, roadmap };
 }

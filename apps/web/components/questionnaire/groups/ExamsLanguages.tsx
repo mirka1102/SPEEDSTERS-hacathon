@@ -11,7 +11,7 @@ type ExamKey = "ielts" | "toefl" | "sat";
 type OtherLanguage = Answers["otherLanguages"][number];
 type LanguageLevel = OtherLanguage["level"];
 
-type ExamConfig = {
+export type ExamConfig = {
   key: ExamKey;
   name: string;
   title: string;
@@ -22,7 +22,7 @@ type ExamConfig = {
   typical: number;
 };
 
-const EXAMS: ExamConfig[] = [
+export const EXAMS: ExamConfig[] = [
   {
     key: "ielts",
     name: "IELTS",
@@ -85,7 +85,7 @@ function hasScore(score: ExamScore | null): boolean {
   return score != null && "value" in score;
 }
 
-function ExamField({
+export function ExamField({
   config,
   score,
   onChange,
