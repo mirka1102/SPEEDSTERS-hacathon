@@ -66,6 +66,8 @@ user can skip forward; "I don't know yet" is a valid answer and becomes a roadma
 
 | Group | Field | Type / options | Feeds |
 |---|---|---|---|
+| Personality | `personality` | introvert / extrovert / balanced | country fit, campus life |
+| | `openness` | high (open to new) / low (prefers familiar) | country fit |
 | About you | `grade` | 9 / 10 / 11 / graduated | intake, timeline |
 | | `intake` | Fall 2027 / Fall 2028 (default from grade) | deadlines |
 | Direction | `fields` | multi (max 2): CS/IT, Engineering, Business/Econ, Natural Sciences, Design/Arts, Undecided | field fit, activities |
@@ -145,9 +147,9 @@ functions, unit-testable, <100ms.
 no matching language level → excluded. If fewer than 3 remain, relax filters and mark results
 `stretch: true`.
 
-**Factor scores (0–1 each):** field, budget, academic, exams, country, language — same style of
+**Factor scores (0–1 each):** field, budget, academic, exams, country, language, personality — same style of
 formula as before (ratio-based for budget, threshold-based for academic/exams, membership-based
-for field/country/language).
+for field/country/language/personality).
 
 **Weights (sum to 1), defaults:** field 0.25 · budget 0.25 · academic 0.15 · exams 0.15 ·
 country 0.12 · language 0.08. `scholarship_need = essential` shifts weight toward budget.

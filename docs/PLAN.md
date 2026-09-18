@@ -102,7 +102,7 @@ docs/
 3. `mock/programs.json` + `mock/plan.json` conforming to those types; `lib/api.ts` returning mocks; `lib/store.ts` with localStorage.
 4. Design tokens (colors incl. label colors, type scale, radius, spacing) — pick name/accent/font first, don't overthink it.
 5. `AppShell` + `StepIndicator` + landing (`/`).
-6. Questionnaire screens (`/profile`) + autosave — done when you can go through all screens, back/next, values persist on refresh, mobile is clean.
+6. Questionnaire screens (`/profile`) + autosave — **must include the mandatory personality/openness test**. Done when you can go through all screens, back/next, values persist on refresh, mobile is clean.
 7. Diagnosis (`/diagnosis`) — summary card, strengths/limitations, goal, skeleton slot for LLM text.
 8. Recommendations (`/recommendations`) — cards with fit score, label badge, factor bars, why-text slot, source badge, select → Compare.
 9. Compare (`/compare`) — column table, rows ordered by weights, best-in-row highlight, CTA to roadmap.
