@@ -1,38 +1,20 @@
 import { Router, Request, Response } from 'express';
 import { buildPlan } from '../engine';
+import { supabase } from '../db/supabase';
 import { Program } from '../../../../packages/shared/types';
-
-const mockPrograms: Program[] = [
-    {
-        id: "tum-informatics", university: "TUM", program: "Informatics", country: "DE", city: "Munich",
-        field: "cs", language: "en", tuitionUsdYear: 0, livingUsdYear: 12000, scholarshipAvailable: false,
-        scholarshipNote: null, gpaMin4: 4.0, ieltsMin: 6.5, toeflMin: null, satRequired: false, satMin: null,
-        otherRequirements: [], selectivity: 1, applicationDeadline: "2027-05-31", intake: "Fall 2027",
-        sourceUrl: "demo", dataStatus: "demo", imageUrl: null, campusLifeNote: null
-    },
-    {
-        id: "mit-cs", university: "MIT", program: "Computer Science", country: "US", city: "Cambridge",
-        field: "cs", language: "en", tuitionUsdYear: 60000, livingUsdYear: 20000, scholarshipAvailable: true,
-        scholarshipNote: "Need-blind", gpaMin4: 4.8, ieltsMin: 7.5, toeflMin: null, satRequired: true, satMin: 1500,
-        otherRequirements: [], selectivity: 1, applicationDeadline: "2027-01-01", intake: "Fall 2027",
-        sourceUrl: "demo", dataStatus: "demo", imageUrl: null, campusLifeNote: null
-    },
-    {
-        id: "asu-cs", university: "ASU", program: "Computer Science", country: "US", city: "Tempe",
-        field: "cs", language: "en", tuitionUsdYear: 32000, livingUsdYear: 15000, scholarshipAvailable: true,
-        scholarshipNote: "Merit based", gpaMin4: 3.5, ieltsMin: 6.0, toeflMin: null, satRequired: false, satMin: null,
-        otherRequirements: [], selectivity: 3, applicationDeadline: "2027-05-01", intake: "Fall 2027",
-        sourceUrl: "demo", dataStatus: "demo", imageUrl: null, campusLifeNote: null
-    }
-];
 
 export const planRouter = Router();
 
-planRouter.post('/', (req: Request, res: Response): any => {
+planRouter.post('/', async (req: Request, res: Response): Promise<any> => {
     const { answers, selected } = req.body;
     if (!answers) return res.status(400).json({ error: 'Answers payload is required' });
     
-    // Pass mock programs for MVP integration testing
-    const plan = buildPlan(answers, mockPrograms);
+    const { data: programs, error } = await supabase.from('programs').select('*');
+    if (error) {
+        console.error('Database error:', error);
+        return res.status(500).json({ error: 'Failed to fetch programs' });
+    }
+
+    const plan = buildPlan(answers, programs as Program[]);
     res.json(plan);
 });
