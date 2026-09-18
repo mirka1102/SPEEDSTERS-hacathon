@@ -63,9 +63,20 @@ the other person before merging.
 
 ## Current status
 
-- Monorepo scaffolded on `main`: `apps/web` running with shadcn components installed
-  (button, card, badge, progress, slider, checkbox, radio-group, sheet, table, skeleton,
-  tooltip, sonner) + lucide-react; `packages/shared/types.ts` written from `docs/SPEC.md`.
-- `apps/api` and `supabase/schema.sql` not started yet (Altair).
-- Frontend work happens on `feat/web-*` branches off `main`; mock data (`apps/web/mock/`) and
-  `lib/api.ts`/`lib/store.ts` are the next frontend task before building real screens.
+- **`apps/web` is feature-complete** against `docs/PLAN.md`'s full build order (all 17 steps):
+  the whole 7-step journey (`/` → `/profile` → `/diagnosis` → `/recommendations` → `/compare` →
+  `/roadmap`), the `ProfileDrawer` (edit budget/countries/exam scores from any screen 3+, plan
+  recomputes live), `/program/[id]`, `/favorites`, `/p/[id]` (returning-user link), a
+  Timeline/Calendar toggle with per-task `.ics` export. Runs entirely against
+  `lib/mockEngine.ts` + `apps/web/mock/programs.json` — no backend call happens yet.
+  65 Vitest tests, clean `tsc --noEmit`, clean `eslint`, verified end-to-end in a real browser
+  (no console errors, no horizontal overflow at 375px).
+- **`apps/api` and `supabase/schema.sql` are not started** (Altair) — `apps/api/` still only has
+  its scaffolding README. This is the critical path for real data and the real `/api/plan`
+  endpoint; `apps/web/lib/api.ts` is the single seam to swap once it exists (see below).
+- Swapping mock → real backend: change only the bodies of `getPlan`/`getPrograms` in
+  `apps/web/lib/api.ts` to call the real API — no caller (`Diagnosis`, `Recommendations`,
+  `Compare`, `Roadmap`, `Favorites`, `ProgramDetail`) needs to change.
+- No deployment yet; the plan is to submit the repo directly rather than a live URL, per the
+  team's own call — re-check `docs/PLAN.md` §6 / the submission checklist §11 before the
+  Sep 19, 12:00 Astana deadline in case that changes.
