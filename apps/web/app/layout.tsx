@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Steer",
-  description: "Your personal admission route — from profile to plan.",
+  description: "Твой личный маршрут поступления: от анкеты до плана с датами.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

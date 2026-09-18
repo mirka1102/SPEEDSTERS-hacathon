@@ -37,7 +37,7 @@ export function StepIndicator({ current, total, labels }: StepIndicatorProps) {
       </div>
       <p className="text-xs text-muted-foreground">
         <span>
-          Step {current} of {total}
+          Шаг {current} из {total}
         </span>
         {label ? (
           <>

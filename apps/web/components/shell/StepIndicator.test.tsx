@@ -8,10 +8,16 @@ describe("StepIndicator", () => {
       <StepIndicator
         current={3}
         total={5}
-        labels={["Profile", "Diagnosis", "Recommendations", "Compare", "Roadmap"]}
+        labels={[
+          "Анкета",
+          "Диагностика",
+          "Рекомендации",
+          "Сравнение",
+          "План",
+        ]}
       />,
     );
     expect(screen.getByText(/3/)).toBeInTheDocument();
-    expect(screen.getByText("Recommendations")).toBeInTheDocument();
+    expect(screen.getByText("Рекомендации")).toBeInTheDocument();
   });
 });
