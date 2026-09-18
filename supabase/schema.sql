@@ -26,7 +26,7 @@ CREATE TABLE programs (
     intake TEXT NOT NULL,
     source_url TEXT NOT NULL,
     data_status TEXT NOT NULL, -- 'verified' | 'demo'
-    image_url TEXT NOT NULL,
+    image_url TEXT, -- nullable: SPEC.md §10 photos are still being sourced for most programs
     campus_life_note TEXT
 );
 

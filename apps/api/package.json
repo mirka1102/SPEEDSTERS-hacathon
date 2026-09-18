@@ -1,12 +1,13 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "Not scaffolded yet on purpose — this is your codebase to set up your way (Node + Express + TypeScript,\r per `docs/PLAN.md` §1). Start with:",
+  "description": "Express + TypeScript backend for the Steer admission-route API (docs/SPEC.md §7).",
   "main": "index.js",
   "scripts": {
     "dev": "tsx src/server.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed": "tsx scripts/seed-programs.ts",
+    "test": "vitest run"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +28,7 @@
     "@types/uuid": "^10.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^3.2.7"
   }
 }

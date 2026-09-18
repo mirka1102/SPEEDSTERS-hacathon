@@ -45,8 +45,6 @@ export interface Answers {
   scholarshipNeed: ScholarshipNeed;
   activities: Activity[];
   hoursPerWeek: 2 | 5 | 10 | 15;
-  personality: "introvert" | "extrovert" | "balanced";
-  openness: "high" | "low";
 }
 
 // ---------- §4 Data model ----------
@@ -98,7 +96,6 @@ export interface FactorScores {
   exams: number;
   country: number;
   language: number;
-  personality: number;
 }
 
 export type Label = "safety" | "match" | "reach";
