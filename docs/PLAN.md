@@ -120,6 +120,10 @@ docs/
 
 ### Altair (`apps/api`) — start immediately, in parallel
 1. Program research — the biggest task. Fill `data/programs.json` with ~25 programs across US/UK/DE/KR/TR per SPEC §4, **including `image_url` and `campus_life_note`** now that they're in the schema. Every field populated, `source_url`, `data_status`. Write `data/SOURCES.md` as you go.
+1b. `scripts/enrich-programs.ts` — an LLM-with-web-search pass over `data/programs.json` that fills
+    remaining gaps (missing tuition, deadline, campus note, etc.), each fill tagged with the source
+    it found. No confident source → field stays `demo`, never guessed. Review the diff before
+    committing. Dev-time only, never called by the running app (SPEC's Data enrichment note, §4).
 2. Supabase: `supabase/schema.sql`, create tables, seed programs from JSON, `db/*` module.
 3. Engine `engine/*` per SPEC §5 — score → label → select → diagnosis → roadmap. `buildPlan()` returns a `Plan`; write 3 fixture tests (tight budget, strong exam scores, undecided grade 9).
 4. `POST /api/plan` — fixture answers in, JSON plan out, fast.

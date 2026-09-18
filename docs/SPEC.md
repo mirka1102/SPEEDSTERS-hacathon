@@ -125,6 +125,17 @@ progress          jsonb     { [task_id]: done_at }
 
 If Supabase is unreachable, the frontend still works from its localStorage copy of the last plan.
 
+### Data enrichment (offline, dev-time only — not a runtime feature)
+
+`apps/api/scripts/enrich-programs.ts` runs once, by hand, between the manual research pass and
+the Supabase seed step. It reads the draft `data/programs.json`, and for every missing/empty
+required field, calls an LLM with web search to look it up. A field is only filled in if the AI
+returns an actual source URL alongside the value; if it can't find one with confidence, the field
+stays `demo`/estimated rather than being guessed. The script prints what it changed and from
+where, and Altair reviews the diff before committing — this fills research gaps, it doesn't
+replace judgment. The live app never calls this at request time: runtime stays fast, deterministic,
+and works with no LLM key at all, exactly as §6 requires.
+
 ## 5. Engine (deterministic, in `apps/api`, no network)
 
 Input: `answers`, `programs[]`. Output: `Plan { diagnosis, recommendations[], roadmap }`. Pure
