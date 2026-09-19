@@ -124,7 +124,7 @@ Matches `docs/SPEC.md` §5 "Definition of MVP done":
 Two-person team:
 - **Frontend/UX** — `apps/web`: the full 7-step journey, design system, profile drawer, favorites,
   program detail, calendar/ics, real-backend integration.
-- **Backend (Altair)** — `apps/api` + Supabase + engine: program research, scoring/labeling/
+- **Backend** — `apps/api` + Supabase + engine: program research, scoring/labeling/
   roadmap engine, REST API, LLM phrasing + fallback.
 
 ## 8. Sources

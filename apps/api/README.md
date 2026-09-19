@@ -1,4 +1,4 @@
-# apps/api — Altair's app
+# apps/api — backend
 
 Express + TypeScript backend. Setup:
 
@@ -12,7 +12,7 @@ npm test
 
 Read first:
 - `docs/SPEC.md` §4 (data model), §5 (engine), §6 (LLM), §7 (API contract), §10 (additional features), and the "Data enrichment" note under §4.
-- `docs/PLAN.md` §4 "Altair (`apps/api`)" for the build order.
+- `docs/PLAN.md` §4 (backend build order).
 - `packages/shared/types.ts` — the contract. Import from there (`import type { Program, Plan } from "../../packages/shared/types"`), don't redefine these shapes locally. Ping the other person before changing that file.
 
 Suggested layout (from `docs/PLAN.md`):

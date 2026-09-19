@@ -83,7 +83,7 @@ user can skip forward; "I don't know yet" is a valid answer and becomes a roadma
 
 ## 4. Data model (Supabase / Postgres)
 
-### `programs` (~25 rows, curated by Altair)
+### `programs` (~25 rows, curated by the backend teammate)
 
 ```
 id                    text PK        e.g. "tum-informatics"
@@ -132,7 +132,7 @@ the Supabase seed step. It reads the draft `data/programs.json`, and for every m
 required field, calls an LLM with web search to look it up. A field is only filled in if the AI
 returns an actual source URL alongside the value; if it can't find one with confidence, the field
 stays `demo`/estimated rather than being guessed. The script prints what it changed and from
-where, and Altair reviews the diff before committing — this fills research gaps, it doesn't
+where, and the backend teammate reviews the diff before committing — this fills research gaps, it doesn't
 replace judgment. The live app never calls this at request time: runtime stays fast, deterministic,
 and works with no LLM key at all, exactly as §6 requires.
 

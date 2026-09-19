@@ -1,6 +1,6 @@
 # Team Plan — who does what, in parallel, without breaking each other
 
-Two people. **Frontend/UX (you)** builds `apps/web`. **Backend (Altair)** builds `apps/api` +
+Two people. **Frontend/UX (you)** builds `apps/web`. **Backend (your teammate)** builds `apps/api` +
 data + engine. Read `SPEC.md` first — it's the contract. `packages/shared/types.ts` is the code
 version of that contract.
 
@@ -11,7 +11,7 @@ version of that contract.
 | Layer | Choice | Why |
 |---|---|---|
 | Frontend | **Next.js 15 (App Router) + TypeScript** | your call — fast, component-driven, good mobile defaults |
-| Backend | **Node.js + Express + TypeScript** | Altair's call — separate service, own deploy, no coupling to frontend internals |
+| Backend | **Node.js + Express + TypeScript** | teammate's call — separate service, own deploy, no coupling to frontend internals |
 | Styling | **Tailwind + shadcn/ui** (disclosed in README) | fast, consistent, mobile-first |
 | DB | **Supabase (Postgres)** | `programs` + `profiles` tables, generous free tier, SQL |
 | Engine | plain TypeScript in `apps/api/src/engine/` | deterministic, unit-testable, no network |
@@ -52,7 +52,7 @@ apps/
       programs.json  plan.json  realistic mock data conforming to shared types (incl. image_url,
                                  campus_life_note)
 
-  api/                       Altair's app
+  api/                       teammate's app
     src/
       server.ts                 Express app, CORS, route wiring
       routes/
@@ -86,7 +86,7 @@ docs/
 
 ## 3. Git workflow
 
-- `main` = always runnable. Branch off it: `feat/web-*` (you), `feat/api-*` (Altair).
+- `main` = always runnable. Branch off it: `feat/web-*` (you), `feat/api-*` (teammate).
 - Small PRs/commits, merge yourself after a quick self-check; don't wait on review.
 - **Rule:** if you touch `packages/shared/types.ts`, message the other person before merging.
 - Commit messages: `feat(web): questionnaire screens`, `feat(engine): budget factor`,
@@ -98,7 +98,7 @@ docs/
 
 ### You (`apps/web`) — unblocks nothing else, so start immediately
 1. Scaffold: `create-next-app`, Tailwind, shadcn init, the folder layout above.
-2. Write `packages/shared/types.ts` together with Altair first — a 15-minute call, not a solo guess.
+2. Write `packages/shared/types.ts` together with your teammate first — a 15-minute call, not a solo guess.
 3. `mock/programs.json` + `mock/plan.json` conforming to those types; `lib/api.ts` returning mocks; `lib/store.ts` with localStorage.
 4. Design tokens (colors incl. label colors, type scale, radius, spacing) — pick name/accent/font first, don't overthink it.
 5. `AppShell` + `StepIndicator` + landing (`/`).
@@ -118,7 +118,7 @@ docs/
 17. `CalendarView` — Timeline/Calendar toggle on `/roadmap`; `lib/ics.ts` + a download button per
     task for "remind me" (no backend notifications needed).
 
-### Altair (`apps/api`) — start immediately, in parallel
+### Teammate (`apps/api`) — start immediately, in parallel
 1. Program research — the biggest task. Fill `data/programs.json` with ~25 programs across US/UK/DE/KR/TR per SPEC §4, **including `image_url` and `campus_life_note`** now that they're in the schema. Every field populated, `source_url`, `data_status`. Write `data/SOURCES.md` as you go.
 1b. `scripts/enrich-programs.ts` — an LLM-with-web-search pass over `data/programs.json` that fills
     remaining gaps (missing tuition, deadline, campus note, etc.), each fill tagged with the source
@@ -133,7 +133,7 @@ docs/
 
 ### Integration checkpoints (do these together, don't skip)
 - **After step 2 of both lists** — types agreed and committed. This is the one thing that must happen before either of you goes deep.
-- **Mid-build** — Altair's `/api/plan` + programs are ready. You flip `lib/api.ts` from mock to real. Walk the 7 steps together, fix any shape mismatches immediately.
+- **Mid-build** — teammate's `/api/plan` + programs are ready. You flip `lib/api.ts` from mock to real. Walk the 7 steps together, fix any shape mismatches immediately.
 - **Before polish** — `/api/explain` + profiles wired in; `/p/[id]` works end to end.
 - **Before submission** — full jury-scenario rehearsal (see §5 below), on whatever you're demoing from (deployed or local). List every bug found, fix in priority order.
 
@@ -171,4 +171,4 @@ docs/
 | Deploy left too late | deploy once basic flow works, redeploy on every meaningful merge after that |
 | Scope creep beyond SPEC §10 (essay help, chat, AI tone picker, etc.) | not in MVP — goes on the "future development" slide only |
 | Program detail/favorites/calendar (§10) eat time meant for the core 7 steps | core 7-step journey (steps 6–13 of your list) ships and is rehearsed *before* any of steps 14–17 start |
-| Changing an answer doesn't visibly change results | dedicated sanity-pass step in Altair's list; tune weights on fixtures until it does |
+| Changing an answer doesn't visibly change results | dedicated sanity-pass step in teammate's list; tune weights on fixtures until it does |
