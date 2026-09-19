@@ -1,12 +1,13 @@
 # apps/api — Altair's app
 
-Not scaffolded yet on purpose — this is your codebase to set up your way (Node + Express + TypeScript,
-per `docs/PLAN.md` §1). Start with:
+Express + TypeScript backend. Setup:
 
 ```
-npm init -y
-npm install express cors dotenv
-npm install -D typescript @types/express @types/cors @types/node tsx vitest
+npm install
+cp .env.example .env   # fill in SUPABASE_URL / SUPABASE_ANON_KEY
+npm run seed            # upserts data/programs.json into Supabase
+npm run dev              # http://localhost:4000
+npm test
 ```
 
 Read first:

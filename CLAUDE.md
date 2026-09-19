@@ -67,16 +67,21 @@ the other person before merging.
   the whole 7-step journey (`/` → `/profile` → `/diagnosis` → `/recommendations` → `/compare` →
   `/roadmap`), the `ProfileDrawer` (edit budget/countries/exam scores from any screen 3+, plan
   recomputes live), `/program/[id]`, `/favorites`, `/p/[id]` (returning-user link), a
-  Timeline/Calendar toggle with per-task `.ics` export. Runs entirely against
-  `lib/mockEngine.ts` + `apps/web/mock/programs.json` — no backend call happens yet.
-  65 Vitest tests, clean `tsc --noEmit`, clean `eslint`, verified end-to-end in a real browser
-  (no console errors, no horizontal overflow at 375px).
-- **`apps/api` and `supabase/schema.sql` are not started** (Altair) — `apps/api/` still only has
-  its scaffolding README. This is the critical path for real data and the real `/api/plan`
-  endpoint; `apps/web/lib/api.ts` is the single seam to swap once it exists (see below).
-- Swapping mock → real backend: change only the bodies of `getPlan`/`getPrograms` in
-  `apps/web/lib/api.ts` to call the real API — no caller (`Diagnosis`, `Recommendations`,
-  `Compare`, `Roadmap`, `Favorites`, `ProgramDetail`) needs to change.
-- No deployment yet; the plan is to submit the repo directly rather than a live URL, per the
-  team's own call — re-check `docs/PLAN.md` §6 / the submission checklist §11 before the
-  Sep 19, 12:00 Astana deadline in case that changes.
+  Timeline/Calendar toggle with per-task `.ics` export. 69 Vitest tests, clean `tsc --noEmit`,
+  clean `eslint`.
+- **`apps/api` is built** (Altair): Express, engine (score/label/select/diagnosis/roadmap),
+  Supabase db layer, routes for plan/programs/profile/explain, 11 Vitest tests. A live Supabase
+  project is provisioned and seeded (`supabase/schema.sql` applied, `apps/api/data/programs.json`
+  seeded via `npm run seed`) — `POST /api/plan` and `GET /api/programs` verified working
+  end-to-end against it.
+- **Real backend is wired into the frontend**: `apps/web/lib/usePlanData.ts` (`usePlan` /
+  `usePrograms`) is the seam every screen reads through. It calls the real API when
+  `NEXT_PUBLIC_API_BASE_URL` is set and falls back to the bundled mock engine (silently, with a
+  small non-blocking `ApiErrorNotice`) on any failure — so the app runs with zero setup
+  (mock-only) or against the real backend, and never renders blank either way.
+- `apps/web/.env.example` and `apps/api/.env.example` document the required variables (no
+  secrets committed — verify with `git status` before committing that only `.env.example` files
+  are staged, never `.env`/`.env.local`).
+- `apps/api/data/programs.json` still has fewer than the ~25 spec'd programs — ongoing data work.
+- No live deployment; the team is submitting the repo directly rather than a hosted URL — see
+  README.md "Run instructions" for local setup (two services, no auth, minutes to run).
