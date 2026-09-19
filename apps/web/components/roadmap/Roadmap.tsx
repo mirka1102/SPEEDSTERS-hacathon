@@ -8,7 +8,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { getPlan } from "@/lib/api";
+import { usePlan } from "@/lib/usePlanData";
+import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { effectiveProgress } from "@/lib/roadmapProgress";
 import { NextActionCard } from "./NextActionCard";
 import { Timeline } from "./Timeline";
@@ -25,16 +26,18 @@ type ViewMode = "timeline" | "calendar";
 export function Roadmap() {
   const { answers, selectedPrograms, progress, toggleTaskDone, hydrated, profileId } = useProfileStore();
   const [view, setView] = useState<ViewMode>("timeline");
+  const { plan, loading, error } = usePlan(answers, selectedPrograms);
 
-  if (!hydrated) return <DataScreenSkeleton />;
+  if (!hydrated || loading) return <DataScreenSkeleton />;
 
-  const { roadmap } = getPlan(answers, selectedPrograms);
+  const { roadmap } = plan;
   const { progressPct, nextActionTaskId, doneCount } = effectiveProgress(roadmap.tasks, progress);
   const nextTask = roadmap.tasks.find((t) => t.id === nextActionTaskId) ?? null;
 
   return (
     <div className="pt-6 pb-16 sm:pt-10">
       <StepIndicator current={6} total={JOURNEY_LABELS.length} labels={JOURNEY_LABELS} />
+      <ApiErrorNotice message={error} />
 
       <h1 className="mt-9 text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance sm:text-[2rem]">
         План

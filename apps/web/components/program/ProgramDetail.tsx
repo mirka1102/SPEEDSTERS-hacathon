@@ -8,7 +8,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { getPlan, getPrograms } from "@/lib/api";
+import { usePlan, usePrograms } from "@/lib/usePlanData";
+import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { formatDate, formatUsd } from "@/lib/labels";
 import { whyTextFor } from "@/lib/whyText";
 import { LabelBadge } from "./LabelBadge";
@@ -35,10 +36,12 @@ const COUNTRY_NAMES: Record<string, string> = {
  */
 export function ProgramDetail({ id }: { id: string }) {
   const { answers, favorites, toggleFavorite, hydrated } = useProfileStore();
+  const { programs, loading: programsLoading, error: programsError } = usePrograms();
+  const { plan, loading: planLoading, error: planError } = usePlan(answers);
 
-  if (!hydrated) return <DataScreenSkeleton />;
+  if (!hydrated || programsLoading || planLoading) return <DataScreenSkeleton />;
 
-  const program = getPrograms().find((p) => p.id === id);
+  const program = programs.find((p) => p.id === id);
 
   if (!program) {
     return (
@@ -46,6 +49,7 @@ export function ProgramDetail({ id }: { id: string }) {
         <h1 className="text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance sm:text-[2rem]">
           Программа не найдена
         </h1>
+        <ApiErrorNotice message={programsError} />
         <Link
           href="/recommendations"
           className="mt-4 inline-block text-sm font-medium text-primary underline underline-offset-4"
@@ -56,7 +60,7 @@ export function ProgramDetail({ id }: { id: string }) {
     );
   }
 
-  const recommendation = getPlan(answers).recommendations.find((r) => r.program.id === id);
+  const recommendation = plan.recommendations.find((r) => r.program.id === id);
   const isFavorite = favorites.includes(program.id);
   const costSource = program.dataStatus === "demo" ? "demo" : program.sourceUrl;
   const countryName = COUNTRY_NAMES[program.country] ?? program.country;
@@ -64,6 +68,7 @@ export function ProgramDetail({ id }: { id: string }) {
   return (
     <div className="pt-6 pb-16 sm:pt-10">
       <StepIndicator current={4} total={JOURNEY_LABELS.length} labels={JOURNEY_LABELS} />
+      <ApiErrorNotice message={planError} />
 
       <div className="mt-9 flex items-start justify-between gap-4">
         <div className="min-w-0">

@@ -7,7 +7,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { getPlan } from "@/lib/api";
+import { usePlan } from "@/lib/usePlanData";
+import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { formatUsd } from "@/lib/labels";
 import { diagnosisTextFor, goalSentence, limitationTexts, strengthTexts } from "@/lib/diagnosisText";
 
@@ -19,15 +20,18 @@ import { diagnosisTextFor, goalSentence, limitationTexts, strengthTexts } from "
  */
 export function Diagnosis() {
   const { answers, hydrated } = useProfileStore();
-  const { diagnosis } = getPlan(answers);
+  const { plan, loading, error } = usePlan(answers);
+
+  if (!hydrated || loading) return <DataScreenSkeleton />;
+
+  const { diagnosis } = plan;
   const strengths = strengthTexts(diagnosis);
   const limitations = limitationTexts(diagnosis);
-
-  if (!hydrated) return <DataScreenSkeleton />;
 
   return (
     <div className="pt-6 pb-16 sm:pt-10">
       <StepIndicator current={3} total={JOURNEY_LABELS.length} labels={JOURNEY_LABELS} />
+      <ApiErrorNotice message={error} />
 
       <h1 className="mt-9 text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance sm:text-[2rem]">
         Твоя диагностика

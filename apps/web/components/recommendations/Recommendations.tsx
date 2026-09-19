@@ -8,7 +8,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { getPlan } from "@/lib/api";
+import { usePlan } from "@/lib/usePlanData";
+import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { ProgramCard } from "@/components/program/ProgramCard";
 
 const VISIBLE_STEP = 3;
@@ -25,10 +26,11 @@ export function Recommendations() {
   const { answers, selectedPrograms, setSelectedPrograms, favorites, toggleFavorite, hydrated } =
     useProfileStore();
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP);
+  const { plan, loading, error } = usePlan(answers);
 
-  if (!hydrated) return <DataScreenSkeleton />;
+  if (!hydrated || loading) return <DataScreenSkeleton />;
 
-  const { recommendations } = getPlan(answers);
+  const { recommendations } = plan;
   const visible = recommendations.slice(0, visibleCount);
   const hasMore = visibleCount < recommendations.length;
   const canCompare = selectedPrograms.length >= MIN_TO_COMPARE;
@@ -44,6 +46,7 @@ export function Recommendations() {
   return (
     <div className="pt-6 pb-16 sm:pt-10">
       <StepIndicator current={4} total={JOURNEY_LABELS.length} labels={JOURNEY_LABELS} />
+      <ApiErrorNotice message={error} />
 
       <h1 className="mt-9 text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance sm:text-[2rem]">
         Подходящие программы

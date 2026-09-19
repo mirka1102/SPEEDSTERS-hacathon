@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { getPlan } from "@/lib/api";
+import { usePlan } from "@/lib/usePlanData";
+import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { getWeights } from "@/lib/mockEngine";
 import { buildFactorRows, fitScoreCells } from "@/lib/compareRows";
 import { formatDate } from "@/lib/labels";
@@ -29,15 +30,17 @@ function costSource(program: { dataStatus: "verified" | "demo"; sourceUrl: strin
  */
 export function Compare() {
   const { answers, selectedPrograms, hydrated } = useProfileStore();
+  const { plan, loading, error } = usePlan(answers, selectedPrograms);
 
-  if (!hydrated) return <DataScreenSkeleton />;
+  if (!hydrated || loading) return <DataScreenSkeleton />;
 
-  const { recommendations } = getPlan(answers, selectedPrograms);
+  const { recommendations } = plan;
   const selected = recommendations.filter((r) => selectedPrograms.includes(r.program.id));
 
   return (
     <div className="pt-6 pb-16 sm:pt-10">
       <StepIndicator current={5} total={JOURNEY_LABELS.length} labels={JOURNEY_LABELS} />
+      <ApiErrorNotice message={error} />
 
       <h1 className="mt-9 text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance sm:text-[2rem]">
         Сравнение

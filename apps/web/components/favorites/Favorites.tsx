@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { DataScreenSkeleton } from "@/components/shell/DataScreenSkeleton";
 import { useProfileStore } from "@/lib/store";
-import { getPrograms } from "@/lib/api";
+import { usePrograms } from "@/lib/usePlanData";
+import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { scoreProgramForAnswers } from "@/lib/mockEngine";
 import { ProgramCard } from "@/components/program/ProgramCard";
 
@@ -16,10 +17,11 @@ import { ProgramCard } from "@/components/program/ProgramCard";
  */
 export function Favorites() {
   const { answers, favorites, toggleFavorite, hydrated } = useProfileStore();
+  const { programs, loading, error } = usePrograms();
 
-  if (!hydrated) return <DataScreenSkeleton />;
+  if (!hydrated || loading) return <DataScreenSkeleton />;
 
-  const allPrograms = new Map(getPrograms().map((p) => [p.id, p]));
+  const allPrograms = new Map(programs.map((p) => [p.id, p]));
   const favoriteRecommendations = favorites
     .map((id) => allPrograms.get(id))
     .filter((p) => p !== undefined)
@@ -30,6 +32,7 @@ export function Favorites() {
       <h1 className="text-[1.75rem] leading-[1.15] font-extrabold tracking-[-0.025em] text-balance sm:text-[2rem]">
         Избранное
       </h1>
+      <ApiErrorNotice message={error} />
       <p className="mt-2.5 max-w-[54ch] text-[0.9375rem] leading-relaxed text-muted-foreground text-pretty">
         Программы, которые ты отметил закладкой — отдельно от тех, что выбраны для сравнения.
       </p>
