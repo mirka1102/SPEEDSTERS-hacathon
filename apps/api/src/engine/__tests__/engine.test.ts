@@ -98,7 +98,18 @@ describe('buildPlan', () => {
   });
 
   it('relaxes hard filters and marks backfilled recommendations stretch:true when fewer than 3 programs match', () => {
-    const plan = buildPlan(baseAnswers({ fields: ['design'] }), programs);
+    // Deliberately sparse fixture rather than the real catalog: data/programs.json now has real
+    // coverage for every field (that was this session's whole point), so no field-only query
+    // against it naturally has fewer than 3 hard-filter-passing programs any more. This test is
+    // about the engine's relax-filters fallback itself, so it shouldn't depend on the catalog
+    // staying sparse to keep exercising that path.
+    const sparse: Program[] = [
+      { ...programs[0], id: 'sparse-cs-1', field: 'cs', language: 'en' },
+      { ...programs[0], id: 'sparse-cs-2', field: 'cs', language: 'en' },
+      { ...programs[0], id: 'sparse-cs-3', field: 'cs', language: 'en' },
+    ];
+
+    const plan = buildPlan(baseAnswers({ fields: ['design'] }), sparse);
     expect(plan.recommendations.length).toBeGreaterThanOrEqual(3);
     for (const rec of plan.recommendations) {
       expect(rec.stretch).toBe(true);
