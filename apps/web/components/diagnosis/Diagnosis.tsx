@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { usePlan } from "@/lib/usePlanData";
+import { usePlan, useExplanation } from "@/lib/usePlanData";
 import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { formatUsd } from "@/lib/labels";
 import { diagnosisTextFor, goalSentence, limitationTexts, strengthTexts } from "@/lib/diagnosisText";
@@ -21,12 +21,14 @@ import { diagnosisTextFor, goalSentence, limitationTexts, strengthTexts } from "
 export function Diagnosis() {
   const { answers, hydrated } = useProfileStore();
   const { plan, loading, error } = usePlan(answers);
+  const explanation = useExplanation(plan);
 
   if (!hydrated || loading) return <DataScreenSkeleton />;
 
   const { diagnosis } = plan;
   const strengths = strengthTexts(diagnosis);
   const limitations = limitationTexts(diagnosis);
+  const diagnosisParagraph = explanation.diagnosisText ?? diagnosisTextFor(diagnosis);
 
   return (
     <div className="pt-6 pb-16 sm:pt-10">
@@ -37,7 +39,7 @@ export function Diagnosis() {
         Твоя диагностика
       </h1>
       <p className="mt-2.5 max-w-[54ch] text-[0.9375rem] leading-relaxed text-muted-foreground text-pretty">
-        {diagnosisTextFor(diagnosis)}
+        {diagnosisParagraph}
       </p>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-accent px-4 py-3.5">

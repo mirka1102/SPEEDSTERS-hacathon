@@ -1,4 +1,4 @@
-import type { Answers, Plan, Program } from "@shared/types";
+import type { Answers, ExplainResponse, Plan, Program } from "@shared/types";
 import { buildMockPlan } from "./mockEngine";
 import programsData from "../mock/programs.json";
 
@@ -46,5 +46,17 @@ export async function getPlanFromApi(answers: Answers, selected?: string[]): Pro
 export async function getProgramsFromApi(): Promise<Program[]> {
   const res = await fetch(`${requireApiBaseUrl()}/api/programs`);
   if (!res.ok) throw new Error(`GET /api/programs failed: ${res.status}`);
+  return res.json();
+}
+
+/** Real POST /api/explain (SPEC.md §7) — LLM phrasing of an already-built Plan's facts, with a
+ * template fallback server-side if the LLM key is missing or the call fails (SPEC.md §6). */
+export async function getExplainFromApi(plan: Plan, lang: "ru" | "en" = "ru"): Promise<ExplainResponse> {
+  const res = await fetch(`${requireApiBaseUrl()}/api/explain`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ plan, lang }),
+  });
+  if (!res.ok) throw new Error(`POST /api/explain failed: ${res.status}`);
   return res.json();
 }

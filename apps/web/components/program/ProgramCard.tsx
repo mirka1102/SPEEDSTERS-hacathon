@@ -30,6 +30,8 @@ type ProgramCardProps = {
   isSelected?: boolean;
   /** True once 3 are already selected and this one isn't one of them — selecting is blocked, not hidden. */
   selectDisabled?: boolean;
+  /** Real LLM why-text (POST /api/explain) when available; falls back to the local template. */
+  whyTextOverride?: string;
 };
 
 /**
@@ -46,10 +48,11 @@ export function ProgramCard({
   onToggleSelect,
   isSelected = false,
   selectDisabled = false,
+  whyTextOverride,
 }: ProgramCardProps) {
   const { program, factors, fitScore, label, stretch } = recommendation;
   const isTop = rank === 1;
-  const why = whyTextFor(recommendation);
+  const why = whyTextOverride ?? whyTextFor(recommendation);
   const costSourceValue: string | "demo" = program.dataStatus === "demo" ? "demo" : program.sourceUrl;
   const countryName = COUNTRY_NAMES[program.country] ?? program.country;
 

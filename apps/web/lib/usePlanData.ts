@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Answers, Plan, Program } from "@shared/types";
+import type { Answers, ExplainResponse, Plan, Program } from "@shared/types";
 import { buildMockPlan } from "./mockEngine";
-import { getPlanFromApi, getProgramsFromApi } from "./api";
+import { getExplainFromApi, getPlanFromApi, getProgramsFromApi } from "./api";
 import programsData from "../mock/programs.json";
 
 const mockPrograms = programsData as Program[];
@@ -116,4 +116,43 @@ export function usePrograms(): ProgramsState {
     loading: apiState.loading,
     error: apiState.error,
   };
+}
+
+interface ExplanationState {
+  /** null until a real LLM response lands — every call site falls back to its own local
+   * template text (lib/diagnosisText.ts / lib/whyText.ts) while this is null, so nothing ever
+   * waits on or breaks over the LLM path (SPEC.md §6 / jury script step 7). */
+  diagnosisText: string | null;
+  whyText: Record<string, string>;
+}
+
+/**
+ * Real LLM phrasing (POST /api/explain) layered on top of the engine's own facts. Only attempted
+ * when `NEXT_PUBLIC_API_BASE_URL` is set — in mock mode this is a no-op and every screen just
+ * keeps using its local template text, same as before this hook existed.
+ */
+export function useExplanation(plan: Plan): ExplanationState {
+  const [state, setState] = useState<ExplanationState>({ diagnosisText: null, whyText: {} });
+  const planKey = JSON.stringify({
+    ids: plan.recommendations.map((r) => r.program.id),
+    stats: plan.diagnosis.stats,
+  });
+
+  useEffect(() => {
+    if (!API_BASE_URL) return;
+    let cancelled = false;
+    getExplainFromApi(plan, "ru")
+      .then((res: ExplainResponse) => {
+        if (!cancelled) setState({ diagnosisText: res.diagnosisText, whyText: res.whyText });
+      })
+      .catch(() => {
+        if (!cancelled) setState({ diagnosisText: null, whyText: {} });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planKey]);
+
+  return state;
 }

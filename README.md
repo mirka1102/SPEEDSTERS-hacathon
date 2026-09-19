@@ -39,7 +39,7 @@ download.
 | Backend | Node.js + Express + TypeScript |
 | Database | Supabase (Postgres) — `programs` + `profiles` tables |
 | Engine | Plain TypeScript, deterministic, unit-tested (`apps/api/src/engine/`) |
-| LLM | Claude (Anthropic API, `claude-3-haiku`) via `POST /api/explain` — phrasing only, template
+| LLM | Claude (Anthropic API, `claude-haiku-4-5`) via `POST /api/explain` — phrasing only, template
       fallback if the key is missing, the call fails, or times out |
 | Contract | `packages/shared/types.ts`, imported by both apps |
 | Tests | Vitest — 69 frontend tests, 11 backend tests, all passing |
@@ -137,14 +137,17 @@ badge instead of an invented number — see `docs/SPEC.md` §9 (honesty rules).
 
 ## 9. AI / API used
 
-- **Claude (Anthropic API, `claude-3-haiku`)** via `apps/api/src/routes/explain.ts` +
-  `src/llm/explain.ts` — takes the engine's already-computed facts (strengths, limitations,
-  selected programs) and phrases them into natural-language diagnosis/why text. It never invents
-  numbers; `src/llm/fallback.ts` renders template text whenever the API key is missing or the call
+- **Claude (Anthropic API, `claude-haiku-4-5`)** via `apps/api/src/routes/explain.ts` +
+  `src/llm/explain.ts` — takes the engine's already-computed facts (strengths, limitations, and
+  each recommended program's own fit score/label/factors) and phrases them into natural-language
+  diagnosis and per-program why-text. It never invents numbers or facts not already given to it;
+  `src/llm/fallback.ts` renders template text whenever the API key is missing or the call
   fails/times out, so the product never depends on the LLM being available.
-- The frontend currently generates its diagnosis/why-text itself via deterministic templates
-  (`apps/web/lib/diagnosisText.ts`, `lib/whyText.ts`) rather than calling `/api/explain` — see
-  Limitations.
+- The frontend (`apps/web/lib/usePlanData.ts`'s `useExplanation` hook) calls `/api/explain` from
+  Diagnosis, Recommendations, and ProgramDetail, and prefers the real LLM text when it resolves.
+  Its own deterministic templates (`lib/diagnosisText.ts`, `lib/whyText.ts`) are always the
+  fallback — used immediately if `NEXT_PUBLIC_API_BASE_URL` is unset, and silently if the LLM call
+  fails — so nothing ever waits on or breaks over the network round-trip.
 - This README, code comments, and parts of the implementation were written with AI pair-programming
   assistance (Claude via Claude Code).
 
@@ -161,10 +164,6 @@ badge instead of an invented number — see `docs/SPEC.md` §9 (honesty rules).
 - **Program data coverage**: `apps/api/data/programs.json` currently has a subset of the ~25
   spec'd programs (5 per country × 5 countries, across CS/Engineering/Business/Natural Sciences/
   Design) — ongoing work, not yet complete at submission time.
-- **`/api/explain` isn't called by the frontend yet** — Diagnosis/Recommendations/ProgramDetail
-  use their own template-based phrasing (`lib/diagnosisText.ts`, `lib/whyText.ts`), which already
-  satisfies the "always renders, never invents numbers" rule without a network round-trip. Wiring
-  real LLM phrasing in is the natural next step, not a blocker for the jury script.
 - **No live deployment** — the team is submitting the repo directly rather than a hosted URL; see
   "Run instructions" above for local setup. Two services, no auth, so a fresh checkout is running
   in minutes.

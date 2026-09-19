@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { usePlan, usePrograms } from "@/lib/usePlanData";
+import { usePlan, usePrograms, useExplanation } from "@/lib/usePlanData";
 import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { formatDate, formatUsd } from "@/lib/labels";
 import { whyTextFor } from "@/lib/whyText";
@@ -38,6 +38,7 @@ export function ProgramDetail({ id }: { id: string }) {
   const { answers, favorites, toggleFavorite, hydrated } = useProfileStore();
   const { programs, loading: programsLoading, error: programsError } = usePrograms();
   const { plan, loading: planLoading, error: planError } = usePlan(answers);
+  const explanation = useExplanation(plan);
 
   if (!hydrated || programsLoading || planLoading) return <DataScreenSkeleton />;
 
@@ -104,7 +105,9 @@ export function ProgramDetail({ id }: { id: string }) {
       {recommendation ? (
         <div className="mt-6 rounded-xl border border-border p-5">
           <div className="flex items-baseline justify-between">
-            <p className="text-[0.9375rem] leading-relaxed text-pretty">{whyTextFor(recommendation)}</p>
+            <p className="text-[0.9375rem] leading-relaxed text-pretty">
+              {explanation.whyText[recommendation.program.id] ?? whyTextFor(recommendation)}
+            </p>
             <span className="ml-4 shrink-0 text-2xl font-bold tabular-nums">{recommendation.fitScore}</span>
           </div>
           <FactorBars factors={recommendation.factors} className="mt-4" />

@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useProfileStore } from "@/lib/store";
 import { JOURNEY_LABELS } from "@/lib/journey";
-import { usePlan } from "@/lib/usePlanData";
+import { usePlan, useExplanation } from "@/lib/usePlanData";
 import { ApiErrorNotice } from "@/components/shell/ApiErrorNotice";
 import { ProgramCard } from "@/components/program/ProgramCard";
 
@@ -27,6 +27,7 @@ export function Recommendations() {
     useProfileStore();
   const [visibleCount, setVisibleCount] = useState(VISIBLE_STEP);
   const { plan, loading, error } = usePlan(answers);
+  const explanation = useExplanation(plan);
 
   if (!hydrated || loading) return <DataScreenSkeleton />;
 
@@ -84,6 +85,7 @@ export function Recommendations() {
                 selectedPrograms.length >= MAX_TO_COMPARE &&
                 !selectedPrograms.includes(recommendation.program.id)
               }
+              whyTextOverride={explanation.whyText[recommendation.program.id]}
             />
           ))
         )}
